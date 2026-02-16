@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 class Config:
     # Required
     telegram_bot_token: str = ""
-    anthropic_api_key: str = ""
+    openrouter_api_key: str = ""
     webhook_url: str = ""  # e.g. https://your-app.railway.app
 
     # Telegram
@@ -17,9 +17,9 @@ class Config:
     data_dir: str = "/data"
 
     # Models
-    chat_model: str = "claude-sonnet-4-5-20250929"
-    synthesis_model: str = "claude-haiku-4-5-20251001"
-    thinking_model: str = "claude-haiku-4-5-20251001"
+    chat_model: str = "anthropic/claude-sonnet-4-5"
+    synthesis_model: str = "anthropic/claude-haiku-4-5"
+    thinking_model: str = "anthropic/claude-haiku-4-5"
 
     # Autonomy
     autonomy_interval_minutes: int = 60
@@ -39,13 +39,13 @@ class Config:
 
         return cls(
             telegram_bot_token=os.environ["TELEGRAM_BOT_TOKEN"],
-            anthropic_api_key=os.environ["ANTHROPIC_API_KEY"],
+            openrouter_api_key=os.environ["OPENROUTER_API_KEY"],
             webhook_url=os.getenv("WEBHOOK_URL", ""),
             allowed_user_ids=allowed_ids,
             data_dir=os.getenv("DATA_DIR", "/data"),
-            chat_model=os.getenv("CHAT_MODEL", "claude-sonnet-4-5-20250929"),
-            synthesis_model=os.getenv("SYNTHESIS_MODEL", "claude-haiku-4-5-20251001"),
-            thinking_model=os.getenv("THINKING_MODEL", "claude-haiku-4-5-20251001"),
+            chat_model=os.getenv("CHAT_MODEL", "anthropic/claude-sonnet-4-5"),
+            synthesis_model=os.getenv("SYNTHESIS_MODEL", "anthropic/claude-haiku-4-5"),
+            thinking_model=os.getenv("THINKING_MODEL", "anthropic/claude-haiku-4-5"),
             autonomy_interval_minutes=int(os.getenv("AUTONOMY_INTERVAL_MINUTES", "60")),
             quiet_hours_start=int(os.getenv("QUIET_HOURS_START", "23")),
             quiet_hours_end=int(os.getenv("QUIET_HOURS_END", "8")),
