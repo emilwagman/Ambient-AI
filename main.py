@@ -93,6 +93,16 @@ async def lifespan(app):
     logger.info(f"Webhook set to {webhook_url}")
     logger.info("Ambient Claude started (webhook mode)")
 
+    # Send startup greeting to allowed users
+    for user_id in config.allowed_user_ids:
+        try:
+            await ptb_app.bot.send_message(
+                chat_id=user_id,
+                text="Hey, I'm online. Memory loaded, autonomy loop running. Message me anytime.",
+            )
+        except Exception as e:
+            logger.warning(f"Could not send startup greeting to {user_id}: {e}")
+
     yield
 
     # Shutdown
@@ -102,12 +112,26 @@ async def lifespan(app):
     await ptb_app.shutdown()
 
 
+async def send_startup_greeting(context):
+    """Send greeting to all allowed users on startup."""
+    config = context.bot_data["config"]
+    for user_id in config.allowed_user_ids:
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="Hey, I'm online. Memory loaded, autonomy loop running. Message me anytime.",
+            )
+        except Exception as e:
+            logger.warning(f"Could not send startup greeting to {user_id}: {e}")
+
+
 def run_polling(config: Config):
     """Run in polling mode for local development."""
     memory = MemoryManager(config.data_dir)
     claude = ClaudeClient(config)
 
     app = ApplicationBuilder().token(config.telegram_bot_token).build()
+    app.bot_data["config"] = config
 
     bot = AmbientBot(config, memory, claude)
     bot.register_handlers(app)
@@ -122,6 +146,9 @@ def run_polling(config: Config):
         first=config.autonomy_interval_minutes * 60,
         name="autonomy_loop",
     )
+
+    # Send startup greeting once bot is ready
+    app.job_queue.run_once(send_startup_greeting, when=5, name="startup_greeting")
 
     logger.info("Ambient Claude started (polling mode)")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
